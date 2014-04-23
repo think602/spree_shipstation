@@ -5,6 +5,8 @@
 .idea
 .project
 .sass-cache
+.ruby-version
+.ruby-gemset
 coverage
 Gemfile.lock
 tmp

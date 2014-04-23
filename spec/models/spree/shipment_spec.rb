@@ -3,22 +3,33 @@ require 'spec_helper'
 describe Spree::Shipment do
   context "between" do
     before do
+      
+      # TODO please save me from manually setting `updated_at`
+      
       @active = []
-
-      create_shipment(updated_at: 1.day.ago, order: create(:order, updated_at: 1.day.ago))
-      create_shipment(updated_at: 1.day.from_now, order: create(:order, updated_at: 1.day.from_now))
-    
+      
+      s1 = create_shipment(updated_at: Time.zone.now-1.day, order: create(:order))
+      s1.order.update_attribute(:updated_at, Time.zone.now-1.day)
+      s2 = create_shipment(updated_at: Time.zone.now+1.day, order: create(:order))
+      s2.order.update_attribute(:updated_at, Time.zone.now+1.day)
+      
       # Old shipment thats order was recently updated..
-      @active << create_shipment(updated_at: 1.week.ago, order: create(:order, updated_at: Time.now))
-
-      @active << create_shipment(updated_at: Time.now)
-      @active << create_shipment(updated_at: Time.now)
+      s3 = create_shipment(updated_at: Time.zone.now-7.days, order: create(:order))
+      s3.order.update_attribute(:updated_at, Time.zone.now)
+      
+      s4 = create_shipment(updated_at: Time.zone.now)
+      s4.order.update_attribute(:updated_at, Time.zone.now)
+      s5 = create_shipment(updated_at: Time.zone.now)
+      s5.order.update_attribute(:updated_at, Time.zone.now)
+      
+      @active << s3
+      @active << s4
+      @active << s5
     end
 
-    subject { Spree::Shipment.between(Time.now-1.hour, Time.now + 1.hours) }
+    subject { Spree::Shipment.between(Time.zone.now-1.hour, Time.zone.now + 1.hours); }
 
     specify { should have(3).shipment }
-
     specify { should == @active }
   end
 
@@ -30,10 +41,8 @@ describe Spree::Shipment do
     subject { Spree::Shipment.exportable }
 
     specify { should have(2).shipments }
-
     specify { should include(ready)}
     specify { should include(shipped)}
-
     specify { should_not include(pending)}
   end
 
@@ -43,7 +52,7 @@ describe Spree::Shipment do
     context "enabled" do
       it "sends email" do
         Spree::Config.send_shipped_email = true
-        mail_message = mock "Mail::Message"
+        mail_message = double("Mail::Message")
         Spree::ShipmentMailer.should_receive(:shipped_email).with(shipment).and_return mail_message
         mail_message.should_receive :deliver
         shipment.ship!
