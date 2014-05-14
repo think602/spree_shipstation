@@ -10,14 +10,14 @@ module Spree
     def apply
       locate ? update : not_found
     rescue => e
-      handle_error(e)
+      handle_error(e) 
     end
 
   private
     def locate
       if Spree::Config.shipstation_number == :order
         order = Spree::Order.find_by_number(@number)
-        @shipment = order.try(:shipment)
+        @shipment = order.shipments.last
       else
         @shipment = Spree::Shipment.find_by_number(@number)
       end
