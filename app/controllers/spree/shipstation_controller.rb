@@ -7,7 +7,7 @@ module Spree
     
     # only need to expost shipnotify route since 
     # it's http post and export is http get
-    protect_from_forgery :except => [:shipnotify]
+    skip_before_filter  :verify_authenticity_token
 
     def export
       @shipments = Spree::Shipment.exportable
