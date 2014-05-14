@@ -4,6 +4,10 @@ module Spree
   class ShipstationController < Spree::StoreController
     include BasicSslAuthentication
     include Spree::DateParamHelper
+    
+    # only need to expost shipnotify route since 
+    # it's http post and export is http get
+    protect_from_forgery :except => [:shipnotify]
 
     def export
       @shipments = Spree::Shipment.exportable
